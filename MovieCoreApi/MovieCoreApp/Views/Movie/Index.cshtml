@@ -1,0 +1,221 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+<style>
+    body{
+        background-color:springgreen;
+    }
+    .add {
+        margin-right: 50px;
+        float: inline-start;
+        background-color:grey;
+    }
+
+    h1 {
+        font-family:'Times New Roman', Times, serif;
+        align-items: center;
+    }
+
+    .table {
+        background-color:azure;
+    }
+    
+    #btnAdd{
+        float:right;
+    }
+    #updatetable{
+        background-color:darkkhaki;
+        width:35%;
+        margin-left:auto;
+        margin-right:auto;
+    }
+</style>
+<body>
+<h1><center>Movies Table</center></h1>
+<a asp-controller="Movie" asp-action="InsertMovie">
+    <input id="btnAdd" type="button" value="Add" class="add btn btn-success" />
+</a>
+<br />
+<br />
+<div class="container-fluid">
+
+    <table class="table table-hover">
+        <thead style="font-family:Verdana, Geneva, Tahoma, sans-serif">
+            <tr>
+                <th>Id</th>
+                <th>Movie Name</th>
+                <th>Descriptions</th>
+                <th>Movie Type</th>
+                <th>Languages</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody id="Moviedata">
+        </tbody>
+    </table>
+    </div>
+    <div id="editdiv">
+        <form>
+            <table id="updatetable" class=" table table-responsive">
+                <tr>
+                    <td><label>Id</label></td>
+                    <td>:</td>
+                    <td><input id="txtId" type="text" /></td>
+                </tr>
+                <tr>
+                    <td><label>Movie Name</label></td>
+                    <td>:</td>
+                    <td><input id="txtMovieName" type="text" /></td>
+                </tr>
+                <tr>
+                    <td><label>Descriptions</label></td>
+                    <td>:</td>
+                    <td><input id="txtdescriptions" type="text" /></td>
+                </tr>
+                <tr>
+                    <td><label>Movie Type</label></td>
+                    <td>:</td>
+                    <td><input id="txtmovietype" type="text" /></td>
+                </tr>
+                <tr>
+                    <td><label>Languages </label></td>
+                    <td>:</td>
+                    <td><input id="txtlanguages" type="text" /></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td><input id="btnSubmit" class="btn btn-secondary" type="button" value="Update" onclick="EditMovieData()" /></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+<br /><br />
+</body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#editdiv").hide("slow");
+            ShowMovieData();
+        });
+
+        function ShowMovieData() {
+            $("#Moviedata").empty();
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:9549/api/Movie",
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var rows = '';
+                    for (var i = 0; i < response.length; i++) {
+
+                        rows = rows + "<tr><td>" + response[i].id + "</td><td>" + response[i].movieName + "</td><td>" + response[i].descriptions + "</td><td>" + response[i].movie_Type + "</td><td>" + response[i].languages + "</td><td><button  class='btn btn-dark' id='EditMovie' data-id=" + response[i].id + " onclick='EditMovieData1(this)'>Edit</button></td><td><button id='DeleteMovie' class='btn btn-dark' data-id=" + response[i].id + " onclick='DeleteMovieData(this)'>Delete</button></td><td></td></tr>";
+                    }
+                    $("#Moviedata").append(rows);
+                    console.log(response);
+                },
+                failure: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                },
+            });
+        }
+
+
+        function DeleteMovieData(id1) {
+            $.ajax({
+                type: "DELETE",
+                url: "http://localhost:9549/api/Movie/DeleteMovie?Id=" + $(id1).data("id"),
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    ShowTutorialData();
+                },
+                failure: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                }
+            });
+        }
+        function EditMovieData() {
+
+            var movie = new Object();
+            movie.id = $('#txtId').val();
+            movie.movieName = $('#txtMovieName').val();
+            movie.descriptions = $('#txtdescriptions').val();
+            movie.movie_Type = $('#txtmovietype').val();
+            movie.languages = $('#txtlanguages').val();
+            $.ajax({
+
+                type: "PUT",
+                url: "http://localhost:9549/api/Movie/UpdateMovie",
+                crossDomain: true,
+                data: JSON.stringify(movie),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    alert('Updated Successfully');
+                },
+                failure: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                }
+
+            });
+            $("#editdiv").hide("slow");
+        }
+
+
+        function EditMovieData1(ctl) {
+            $("#editdiv").show("slow");
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:9549/api/Movie/GetMovieById?Id=" + $(ctl).data("id"),
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    $("#txtId").val(response.id);
+                    $("#txtMovieName").val(response.movieName);
+                    $('#txtdescriptions').val(response.descriptions);
+                    $('#txtmovietype').val(response.movie_Type);
+                    $('#txtlanguages').val(response.languages);
+                },
+                failure: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                },
+                error: function (response) {
+                    debugger;
+                    alert(response.responseText);
+                }
+            });
+
+        }
+
+
+
+
+
+    </script>
